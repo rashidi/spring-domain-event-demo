@@ -18,7 +18,7 @@ public class BookEventPublisher {
 
     private final ApplicationEventPublisher eventPublisher;
 
-    @Pointcut("execution(* BookService.purchase(..))")
+    @Pointcut("execution(* BookRepository.delete(..))")
     private void purchase() {
     }
 

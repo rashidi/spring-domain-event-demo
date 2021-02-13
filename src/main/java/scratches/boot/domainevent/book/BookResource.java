@@ -1,6 +1,7 @@
 package scratches.boot.domainevent.book;
 
 import lombok.AllArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -11,16 +12,17 @@ import static org.springframework.http.HttpStatus.OK;
 /**
  * @author Rashidi Zin
  */
+@Transactional
 @RestController
 @AllArgsConstructor
 public class BookResource {
 
-    public final BookService service;
+    private final BookRepository repository;
 
     @DeleteMapping("/books/{id}/purchase")
     @ResponseStatus(OK)
     public void purchase(@PathVariable Long id) {
-        service.find(id).ifPresent(service::purchase);
+        repository.findById(id).ifPresent(repository::delete);
     }
 
 }
