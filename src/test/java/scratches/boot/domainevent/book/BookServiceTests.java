@@ -5,8 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
-import scratches.boot.domainevent.availability.BookAvailability;
-import scratches.boot.domainevent.availability.BookAvailabilityRepository;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.Optional;
 
@@ -21,35 +20,29 @@ class BookServiceTests {
 
     private final BookRepository repository = mock(BookRepository.class);
 
-    private final BookAvailabilityRepository availabilityRepository = mock(BookAvailabilityRepository.class);
+    private final ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
 
-    private final BookService service = new BookService(repository, availabilityRepository);
+    private final BookService service = new BookService(repository, eventPublisher);
 
     @Test
-    @DisplayName("Total book availability will be reduced once a book is purchased")
+    @DisplayName("Event will be triggered with information about purchased Book")
     void purchase() {
         Book book = book();
-        BookAvailability availability = availability();
 
         doNothing().when(repository).delete(book);
 
-        doReturn(availability).when(availabilityRepository).findByIsbn(book.getIsbn());
-
-        doReturn(availability).when(availabilityRepository).save(eq(availability));
+        doNothing().when(eventPublisher).publishEvent(any(BookPurchaseEvent.class));
 
         service.purchase(book);
 
-        ArgumentCaptor<BookAvailability> captor = ArgumentCaptor.forClass(BookAvailability.class);
+        ArgumentCaptor<BookPurchaseEvent> captor = ArgumentCaptor.forClass(BookPurchaseEvent.class);
 
         verify(repository).delete(book);
-        verify(availabilityRepository).findByIsbn(book.getIsbn());
-        verify(availabilityRepository).save(captor.capture());
+        verify(eventPublisher).publishEvent(captor.capture());
 
-        Integer updatedTotal = captor.getValue().getTotal();
+        BookPurchaseEvent event = captor.getValue();
 
-        assertThat(updatedTotal)
-                .describedAs("Total availability reduced from 100 to 99")
-                .isEqualTo(99);
+        assertThat(event.getSource()).isEqualTo(book);
     }
 
     @Test
@@ -75,13 +68,5 @@ class BookServiceTests {
         return book;
     }
 
-    private BookAvailability availability() {
-        BookAvailability availability = new BookAvailability();
-
-        availability.setIsbn(9780385543378L);
-        availability.setTotal(100);
-
-        return availability;
-    }
 
 }
