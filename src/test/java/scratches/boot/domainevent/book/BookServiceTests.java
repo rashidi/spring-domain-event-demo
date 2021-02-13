@@ -3,13 +3,10 @@ package scratches.boot.domainevent.book;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 /**
@@ -20,29 +17,18 @@ class BookServiceTests {
 
     private final BookRepository repository = mock(BookRepository.class);
 
-    private final ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
-
-    private final BookService service = new BookService(repository, eventPublisher);
+    private final BookService service = new BookService(repository);
 
     @Test
-    @DisplayName("Event will be triggered with information about purchased Book")
+    @DisplayName("Repository.delete will be triggered when Book is purchased")
     void purchase() {
         Book book = book();
 
         doNothing().when(repository).delete(book);
 
-        doNothing().when(eventPublisher).publishEvent(any(BookPurchaseEvent.class));
-
         service.purchase(book);
 
-        ArgumentCaptor<BookPurchaseEvent> captor = ArgumentCaptor.forClass(BookPurchaseEvent.class);
-
         verify(repository).delete(book);
-        verify(eventPublisher).publishEvent(captor.capture());
-
-        BookPurchaseEvent event = captor.getValue();
-
-        assertThat(event.getSource()).isEqualTo(book);
     }
 
     @Test
