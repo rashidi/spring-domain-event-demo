@@ -22,7 +22,7 @@ public class BookResource {
     @DeleteMapping("/books/{id}/purchase")
     @ResponseStatus(OK)
     public void purchase(@PathVariable Long id) {
-        repository.findById(id).ifPresent(repository::delete);
+        repository.findById(id).map(Book::purchase).ifPresent(repository::delete);
     }
 
 }

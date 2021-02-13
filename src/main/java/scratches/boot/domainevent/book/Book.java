@@ -1,6 +1,8 @@
 package scratches.boot.domainevent.book;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.springframework.data.domain.AbstractAggregateRoot;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -11,7 +13,8 @@ import javax.persistence.Id;
  */
 @Data
 @Entity
-public class Book {
+@EqualsAndHashCode(callSuper = true)
+public class Book extends AbstractAggregateRoot<Book> {
 
     @Id
     @GeneratedValue
@@ -22,5 +25,10 @@ public class Book {
     private String author;
 
     private Long isbn;
+
+    public Book purchase() {
+        registerEvent(new BookPurchaseEvent(this));
+        return this;
+    }
 
 }
